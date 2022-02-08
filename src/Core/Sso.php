@@ -101,7 +101,7 @@ class Sso implements SsoInterface
         );
 
         if (isset($data['code']) && $data['code'] == 0) {
-            return $data['code'];
+            return $data['data'];
         }
 
         throw new PluginException(ErrorCode::LOGIN_AGAIN, $data['msg'] ?? '');
