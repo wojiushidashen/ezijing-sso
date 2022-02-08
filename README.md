@@ -34,7 +34,7 @@
 ```
 ### 2、发布配置
 ```shell
->  php bin/hyperf.php vendor:publish
+>  php bin/hyperf.php vendor:publish ezijing/ezijing-sso
 ```
 ```php
 <?php
