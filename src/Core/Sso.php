@@ -51,7 +51,7 @@ class Sso implements SsoInterface
     public function login(string $username, string $password)
     {
         return requestClient(
-            self::GET,
+            self::POST,
             $this->ssoHost . config('sso_plugins.newsso_api.LOGIN'),
             [
                 'service' => '0.0.0.0',
