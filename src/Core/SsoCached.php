@@ -156,6 +156,7 @@ class SsoCached implements SsoCachedInterface
         }
 
         $this->cachedIndex = (string) $cachedIndex;
+        $this->cachedTag = (int) ($cachedTag ?? -1);
         switch ($cachedTag) {
             case self::CACHED_TAG_SSOID:
                 $this->cacheKey = RedisKeys::getMessage(RedisKeys::CACHE_USER_INFO_SSOID, [$this->cachedIndex]);
