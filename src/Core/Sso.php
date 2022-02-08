@@ -54,7 +54,7 @@ class Sso implements SsoInterface
             self::POST,
             $this->ssoHost . config('sso_plugins.newsso_api.LOGIN'),
             [
-                'service' => '0.0.0.0',
+                'service' => $this->ssoHost,
                 'account' => $username,
                 'password' => $password,
                 'type' => self::LOGIN_TYPE_PASSWORD,

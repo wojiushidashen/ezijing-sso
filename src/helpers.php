@@ -47,7 +47,11 @@ if (! function_exists('requestClient')) {
                 break;
             case 'post':
                 if (! empty($data)) {
-                    $options['json'] = $data;
+                    if (isset($header['Content-Type']) && strpos($header['Content-Type'], 'application/x-www-form-urlencoded') !== false) {
+                        $options['form_params'] = $data;
+                    } else {
+                        $options['json'] = $data;
+                    }
                 }
                 $result = $client->post($url, $options)->getBody()->getContents();
                 break;
@@ -59,13 +63,21 @@ if (! function_exists('requestClient')) {
                 break;
             case 'put':
                 if (! empty($data)) {
-                    $options['json'] = $data;
+                    if (isset($header['Content-Type']) && strpos($header['Content-Type'], 'application/x-www-form-urlencoded') !== false) {
+                        $options['form_params'] = $data;
+                    } else {
+                        $options['json'] = $data;
+                    }
                 }
                 $result = $client->put($url, $options)->getBody()->getContents();
                 break;
             case 'patch':
                 if (! empty($data)) {
-                    $options['json'] = $data;
+                    if (isset($header['Content-Type']) && strpos($header['Content-Type'], 'application/x-www-form-urlencoded') !== false) {
+                        $options['form_params'] = $data;
+                    } else {
+                        $options['json'] = $data;
+                    }
                 }
                 $result = $client->patch($url, $options)->getBody()->getContents();
                 break;
