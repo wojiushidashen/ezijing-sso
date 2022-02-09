@@ -33,4 +33,9 @@ class ErrorCode extends AbstractConstants
      * @Message("缓存用户信息失败")
      */
     public const CACHED_SSO_INFO_ERROR = 40004;
+
+    /**
+     * @Message("版本设置错误，当前只支持：%s版本")
+     */
+    public const SSO_VERSION_ERROR = 40005;
 }

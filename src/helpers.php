@@ -121,3 +121,24 @@ if (! function_exists('setDataAndCheck')) {
         }
     }
 }
+
+if (! function_exists('getConfigByFormatName')) {
+    /**
+     * 格式化输入获取配置文件.
+     *
+     * @param string $configStr 配置文件
+     * @param mixed ...$strParam 格式化的参数
+     * @return mixed
+     */
+    function getConfigByFormatName(string $configStr, ...$strParam)
+    {
+        return config(sprintf($configStr, $strParam));
+    }
+}
+
+if (! function_exists('formatVersion')) {
+    function formatVersion($version)
+    {
+        return str_replace('V', '', $version);
+    }
+}

@@ -8,6 +8,8 @@ use Ezijing\EzijingSso\Constants\ErrorCode;
 use Ezijing\EzijingSso\Constants\RedisKeys;
 use Ezijing\EzijingSso\Exceptions\PluginException;
 use Ezijing\EzijingSso\Interfaces\SsoCachedInterface;
+use Ezijing\EzijingSso\Utils;
+use Hyperf\Config\Annotation\Value;
 use Hyperf\Di\Annotation\Inject;
 use Hyperf\Utils\Codec\Json;
 
@@ -46,6 +48,35 @@ class SsoCached implements SsoCachedInterface
      * @Inject
      */
     protected $ssoApi;
+
+    /**
+     * @Value("sso_plugins.default_version")
+     */
+    protected $version;
+
+    public function __construct()
+    {
+        // 设置版本
+        Utils::checkVersion($this->version);
+
+        // 设置ssoAPi的版本
+        $this->ssoApi->withVersion($this->version);
+    }
+
+    /**
+     * 设置版本.
+     *
+     * @param string $version 版本
+     * @return $this
+     */
+    public function withVersion(string $version)
+    {
+        Utils::checkVersion($version);
+        $this->version = $version;
+        $this->ssoApi->withVersion($version);
+
+        return $this;
+    }
 
     /**
      * 以TGC为KEY的缓存.

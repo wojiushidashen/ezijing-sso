@@ -7,6 +7,7 @@ namespace Ezijing\EzijingSso\Core;
 use Ezijing\EzijingSso\Constants\ErrorCode;
 use Ezijing\EzijingSso\Exceptions\PluginException;
 use Ezijing\EzijingSso\Interfaces\SsoInterface;
+use Ezijing\EzijingSso\Utils;
 use Hyperf\Config\Annotation\Value;
 
 /**
@@ -14,32 +15,76 @@ use Hyperf\Config\Annotation\Value;
  */
 class Sso implements SsoInterface
 {
-    //账密登录
+    /**
+     * @var int 账密登录
+     */
     protected const LOGIN_TYPE_PASSWORD = 1;
 
-    // 请求方法
+    /**
+     * @var string POST 请求方式
+     */
     protected const POST = 'post';
 
+    /**
+     * @var string GET请求方式
+     */
     protected const GET = 'get';
 
-    // 请求数据格式
+    /**
+     * @var string 请求数据格式 application/x-www-form-urlencoded
+     */
     protected const CONTENT_TYPE_FORM = 'application/x-www-form-urlencoded';
 
+    /**
+     * @var string 请求数据格式 text/html
+     */
     protected const CONTENT_TYPE_TEXT = 'text/html';
 
     /**
-     * 新版sso的host.
+     * 版本.
      *
-     * @Value("sso_plugins.newsso_host")
+     * @Value("sso_plugins.default_version")
+     */
+    protected $version;
+
+    /**
+     * 新版sso的host.
      */
     protected $ssoHost;
 
     /**
      * 用户中心的host.
-     *
-     * @Value("sso_plugins.usercenter_host")
      */
     protected $userCenterHost;
+
+    /**
+     * 盐值.
+     * @Value("sso_plugins.salt")
+     */
+    protected $salt;
+
+    public function __construct()
+    {
+        // 验证版本
+        Utils::checkVersion($this->version);
+
+        // 设置host
+        $this->setHost();
+    }
+
+    /**
+     * 设置版本.
+     *
+     * @param string $version 版本
+     * @return $this
+     */
+    public function withVersion(string $version)
+    {
+        Utils::checkVersion($version);
+        $this->version = $version;
+
+        return $this;
+    }
 
     /**
      * 通过用户名密码登录.
@@ -52,13 +97,13 @@ class Sso implements SsoInterface
     {
         return requestClient(
             self::POST,
-            $this->ssoHost . config('sso_plugins.newsso_api.LOGIN'),
-            [
+            $this->ssoHost . getConfigByFormatName('sso_plugins.%s.newsso_api.LOGIN', $this->version),
+            $this->getRequestData([
                 'service' => $this->ssoHost,
                 'account' => $username,
                 'password' => $password,
                 'type' => self::LOGIN_TYPE_PASSWORD,
-            ],
+            ]),
             ['Content-Type' => self::CONTENT_TYPE_FORM]
         );
     }
@@ -73,8 +118,8 @@ class Sso implements SsoInterface
     {
         return requestClient(
             self::GET,
-            $this->ssoHost . config('sso_plugins.newsso_api.LOGOUT'),
-            [],
+            $this->ssoHost . getConfigByFormatName('sso_plugins.%s.newsso_api.LOGOUT', $this->version),
+            $this->getRequestData([]),
             [
                 'Content-Type' => self::CONTENT_TYPE_TEXT,
                 'Cookie' => "TGC={$tgc}",
@@ -92,8 +137,8 @@ class Sso implements SsoInterface
     {
         $data = requestClient(
             self::GET,
-            $this->ssoHost . config('sso_plugins.newsso_api.USERINFO'),
-            [],
+            $this->ssoHost . getConfigByFormatName('sso_plugins.%s.newsso_api.USERINFO', $this->version),
+            $this->getRequestData([]),
             [
                 'Content-Type' => self::CONTENT_TYPE_TEXT,
                 'Cookie' => "TGC={$tgc}",
@@ -120,8 +165,8 @@ class Sso implements SsoInterface
 
         return requestClient(
             self::POST,
-            $this->userCenterHost . config('sso_plugins.usercenter_api.CREATE_USER_SINGLE'),
-            $sendData,
+            $this->userCenterHost . getConfigByFormatName('sso_plugins.%s.usercenter_api.CREATE_USER_SINGLE', $this->version),
+            $this->getRequestData($sendData),
             ['Content-Type' => self::CONTENT_TYPE_FORM]
         );
     }
@@ -139,8 +184,8 @@ class Sso implements SsoInterface
         setDataAndCheck($userParams, $allowUserParams, [], $sendData);
         $data = requestClient(
             self::POST,
-            $this->userCenterHost . config('sso_plugins.usercenter_api.EXACT_SEARCH_USER'),
-            $sendData,
+            $this->userCenterHost . getConfigByFormatName('sso_plugins.%s.usercenter_api.EXACT_SEARCH_USER', $this->version),
+            $this->getRequestData($sendData),
             ['Content-Type' => self::CONTENT_TYPE_FORM]
         );
 
@@ -169,8 +214,8 @@ class Sso implements SsoInterface
 
         return requestClient(
             self::GET,
-            $this->userCenterHost . config('sso_plugins.usercenter_api.SEARCH_SERVER_USER'),
-            $sendData,
+            $this->userCenterHost . getConfigByFormatName('sso_plugins.%s.usercenter_api.SEARCH_SERVER_USER', $this->version),
+            $this->getRequestData($sendData),
             ['Content-Type' => self::CONTENT_TYPE_FORM]
         );
     }
@@ -185,11 +230,73 @@ class Sso implements SsoInterface
     {
         $users = requestClient(
             self::GET,
-            $this->userCenterHost . config('sso_plugins.usercenter_api.SEARCH_SERVER_USER_MULTI'),
-            ['id' => $id],
+            $this->userCenterHost . getConfigByFormatName('sso_plugins.%s.usercenter_api.SEARCH_SERVER_USER_MULTI', $this->version),
+            $this->getRequestData(['id' => $id]),
             ['Content-Type' => self::CONTENT_TYPE_TEXT]
         );
 
         return $users[$id] ?? [];
+    }
+
+    /**
+     * 设置host.
+     */
+    private function setHost()
+    {
+        switch (strtoupper($this->version)) {
+            case 'V1':
+                $this->ssoHost = config('sso_plugins.newsso_host');
+                $this->userCenterHost = config('sso_plugins.usercenter_api_host');
+                break;
+            case 'V2':
+                $this->ssoHost = config('sso_plugins.usercenter_host');
+                $this->userCenterHost = config('sso_plugins.usercenter_api_host');
+                break;
+            default:
+                throw new PluginException(ErrorCode::SSO_VERSION_ERROR, 'V1,V2');
+        }
+    }
+
+    /**
+     * 签名.
+     *
+     * @param $data
+     * @return mixed
+     */
+    private function sign($data)
+    {
+        $data['timestamp'] = time();
+        $data['nonce'] = uniqid('', true);  // 保证唯一
+        $data['salt'] = $this->salt;
+        ksort($data);
+
+        $query = '';
+        foreach ($data as $k => $v) {
+            if (is_array($v)) {
+                $query .= $k . '=' . json_encode($v) . '&';
+            } else {
+                $query .= $k . '=' . $v . '&';
+            }
+        }
+        $query = substr($query, 0, strlen($query) - 1);
+        $signature = strtoupper(md5($query));
+        $data['signature'] = $signature;
+        unset($data['salt']);
+
+        return $data;
+    }
+
+    /**
+     * 获取请求参数.
+     *
+     * @return array|mixed
+     */
+    private function getRequestData(array $data)
+    {
+        if (formatVersion(strtoupper($this->version)) > 1) {
+            return $this->sign($data);
+        }
+
+        return $data;
     }
 }

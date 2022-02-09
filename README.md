@@ -44,31 +44,58 @@
 declare(strict_types=1);
 
 return [
+    // 版本 V1, V2
+    'default_version' => env('SSO_VERSION', 'V1'),
     // 新版sso地址
     'newsso_host' => env('SSO_NEWSSO_API_HOST', ''),
-    // 新版sso api
-    'newsso_api' => [
-        'LOGIN' => '/rest/login',
-        'LOGOUT' => '/rest/logout',
-        'USERINFO' => '/account/get-user-info',
-    ],
-
+    // 新版sso V2地址
+    'usercenter_host' => env('SSO_USERCENTER_HOST', ''),
     // 用户中心地址
-    'usercenter_host' => env('SSO_USERCENTER_API_HOST', ''),
-    // 用户中心api
-    'usercenter_api' => [
-        'SEARCH_USER' => '/user/multi-get-user-info',
-        'CREATE_USER' => '/user/multi-create-user',
-        'CREATE_USER_SINGLE' => '/user/create-user',
-        'UPDATE_USER' => '/user/change-info',
-        'CHANGE_PWD_BY_COOKIE' => '/user/change-pwd-by-cookie',
-        'EXACT_SEARCH_USER' => '/user/exact-search-user',
-        'SEARCH_SERVER_USER' => '/user/search-user',
-        'SEARCH_SERVER_USER_MULTI' => '/user/multi-get-user-info',
+    'usercenter_api_host' => env('SSO_USERCENTER_API_HOST', ''),
+    // 接口签名使用的盐值
+    'salt' => env('SSO_SALT', ''),
+    
+    'V1' => [
+        // 新版sso api
+        'newsso_api' => [
+            'LOGIN' => '/rest/login',
+            'LOGOUT' => '/rest/logout',
+            'USERINFO' => '/account/get-user-info',
+        ],
+        // 用户中心api
+        'usercenter_api' => [
+            'SEARCH_USER' => '/user/multi-get-user-info',
+            'CREATE_USER' => '/user/multi-create-user',
+            'CREATE_USER_SINGLE' => '/user/create-user',
+            'UPDATE_USER' => '/user/change-info',
+            'CHANGE_PWD_BY_COOKIE' => '/user/change-pwd-by-cookie',
+            'EXACT_SEARCH_USER' => '/user/exact-search-user',
+            'SEARCH_SERVER_USER' => '/user/search-user',
+            'SEARCH_SERVER_USER_MULTI' => '/user/multi-get-user-info',
+        ],
+    ],
+    'V2' => [
+        // 新版sso api
+        'newsso_api' => [
+            'LOGIN' => '/v2/frontend/user/login',
+            'LOGOUT' => '/v2/frontend/user/logout',
+            'USERINFO' => '/v2/frontend/user/get-user-info',
+        ],
+        // 用户中心api
+        'usercenter_api' => [
+            'SEARCH_USER' => '/v2/server/user/multi-get-user-info',
+            'CREATE_USER' => '/v2/server/user/multi-create-user',
+            'CREATE_USER_SINGLE' => '/v2/server/user/create-user',
+            'UPDATE_USER' => '/v2/server/user/change-info',
+            'CHANGE_PWD_BY_COOKIE' => '/v2/frontend/user/change-pwd-by-cookie',
+            'EXACT_SEARCH_USER' => '/v2/server/user/search-user',
+            'SEARCH_SERVER_USER' => '/v2/server/user/search-user',
+            'SEARCH_SERVER_USER_MULTI' => '/v2/server/user/multi-get-user-info',
+        ],
     ],
 ];
+?>
 ```
-
 
 使用ssoApi 
 -------------------------------
@@ -77,7 +104,7 @@ return [
 ```php
 <?php
 $ssoApi = make(\Ezijing\EzijingSso\Core\Sso::class);
-$ssoApi->login('username', 'password');
+$ssoApi->withVersion('V2')->login('username', 'password');
 ?>
 ```
 
@@ -85,7 +112,7 @@ $ssoApi->login('username', 'password');
 ```php
 <?php
 $ssoApi = make(\Ezijing\EzijingSso\Core\Sso::class);
-$ssoApi->logout('TGC')
+$ssoApi->withVersion('V2')->logout('TGC')
 ?>
 ```
 
@@ -93,7 +120,7 @@ $ssoApi->logout('TGC')
 ```php
 <?php
 $ssoApi = make(\Ezijing\EzijingSso\Core\Sso::class);
-$user = $ssoApi->getUserInfoByTgc('TGC');
+$user = $ssoApi->withVersion('V2')->getUserInfoByTgc('TGC');
 ?>
 ```
 
@@ -109,7 +136,7 @@ $data = [
     'password' => '123456', 
     'country_code' => '86'
 ];
-$user = $ssoApi->createUser($data);
+$user = $ssoApi->withVersion('V2')->createUser($data);
 ?>
 ```
 
@@ -120,7 +147,7 @@ $ssoApi = make(\Ezijing\EzijingSso\Core\Sso::class);
 $data = [
     'username' => '小明',
 ];
-$ssoApi->exactSearchUser($data);
+$ssoApi->withVersion('V2')->exactSearchUser($data);
 ?>
 ```
 
@@ -131,7 +158,7 @@ $ssoApi = make(\Ezijing\EzijingSso\Core\Sso::class);
 $data = [
     'username' => '小明',
 ];
-$ssoApi->search($data);
+$ssoApi->withVersion('V2')->search($data);
 ?>
 ```
 
@@ -139,7 +166,7 @@ $ssoApi->search($data);
 ```php
 <?php
 $ssoApi = make(\Ezijing\EzijingSso\Core\Sso::class);
-$ssoApi->exactSearchOneUserById('1');
+$ssoApi->withVersion('V2')->exactSearchOneUserById('1');
 ?>
 ```
 
@@ -151,6 +178,7 @@ $ssoApi->exactSearchOneUserById('1');
 <?php
 $ssoCached = make(\Ezijing\EzijingSso\Core\SsoCached::class);
 $ssoCached
+    ->withVersion('V2')
     ->withTgc('TGC')
     ->setUser([
         'id' => 1,
@@ -164,6 +192,7 @@ $ssoCached
 <?php
 $ssoCached = make(\Ezijing\EzijingSso\Core\SsoCached::class);
 $ssoCached
+    ->withVersion('V2')
     ->withSsoId('1')
     ->setUser([
         'id' => 1,
@@ -178,6 +207,7 @@ $ssoCached
 <?php
 $ssoCached = make(\Ezijing\EzijingSso\Core\SsoCached::class);
 $user = $ssoCached
+    ->withVersion('V2')
     ->withTgc('TGC')
     ->getUser();
 ?>
@@ -188,6 +218,7 @@ $user = $ssoCached
 <?php
 $ssoCached = make(\Ezijing\EzijingSso\Core\SsoCached::class);
 $user = $ssoCached
+    ->withVersion('V2')
     ->withSsoId('1')
     ->getUser();
 ?>
@@ -198,6 +229,7 @@ $user = $ssoCached
 <?php
 $ssoCached = make(\Ezijing\EzijingSso\Core\SsoCached::class);
 $ssoCached
+    ->withVersion('V2')
     ->withTgc('TGC')
     ->clearUserCached();
 ?>
@@ -208,6 +240,7 @@ $ssoCached
 ```php
 $ssoCached = make(\Ezijing\EzijingSso\Core\SsoCached::class);
 $ssoCached
+    ->withVersion('V2')
     ->withSsoId('1')
     ->clearUserCached();
 ```
