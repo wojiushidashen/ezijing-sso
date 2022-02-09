@@ -127,10 +127,10 @@ if (! function_exists('getConfigByFormatName')) {
      * 格式化输入获取配置文件.
      *
      * @param string $configStr 配置文件
-     * @param mixed ...$strParam 格式化的参数
+     * @param mixed $strParam 格式化的参数
      * @return mixed
      */
-    function getConfigByFormatName(string $configStr, ...$strParam)
+    function getConfigByFormatName(string $configStr, $strParam)
     {
         return config(sprintf($configStr, $strParam));
     }

@@ -65,11 +65,7 @@ class Sso implements SsoInterface
 
     public function __construct()
     {
-        // 验证版本
-        Utils::checkVersion($this->version);
-
-        // 设置host
-        $this->setHost();
+        $this->init($this->version);
     }
 
     /**
@@ -80,8 +76,7 @@ class Sso implements SsoInterface
      */
     public function withVersion(string $version)
     {
-        Utils::checkVersion($version);
-        $this->version = $version;
+        $this->init($version);
 
         return $this;
     }
@@ -95,7 +90,7 @@ class Sso implements SsoInterface
      */
     public function login(string $username, string $password)
     {
-        return requestClient(
+        $data = requestClient(
             self::POST,
             $this->ssoHost . getConfigByFormatName('sso_plugins.%s.newsso_api.LOGIN', $this->version),
             $this->getRequestData([
@@ -106,6 +101,8 @@ class Sso implements SsoInterface
             ]),
             ['Content-Type' => self::CONTENT_TYPE_FORM]
         );
+
+        return $this->formatResponse($data);
     }
 
     /**
@@ -116,7 +113,7 @@ class Sso implements SsoInterface
      */
     public function logout(string $tgc)
     {
-        return requestClient(
+        $data = requestClient(
             self::GET,
             $this->ssoHost . getConfigByFormatName('sso_plugins.%s.newsso_api.LOGOUT', $this->version),
             $this->getRequestData([]),
@@ -125,6 +122,8 @@ class Sso implements SsoInterface
                 'Cookie' => "TGC={$tgc}",
             ]
         );
+
+        return $this->formatResponse($data);
     }
 
     /**
@@ -161,14 +160,19 @@ class Sso implements SsoInterface
     {
         $sendData = [];
         $allowUserParams = ['username', 'nickname', 'email', 'mobile', 'id_number', 'wechat_unionid', 'status', 'password', 'country_code'];
+        if (formatVersion($this->version) > 1) {
+            array_push($allowUserParams, 'project_id', 'register_type');
+        }
         setDataAndCheck($userParams, $allowUserParams, [], $sendData);
 
-        return requestClient(
+        $res = requestClient(
             self::POST,
             $this->userCenterHost . getConfigByFormatName('sso_plugins.%s.usercenter_api.CREATE_USER_SINGLE', $this->version),
             $this->getRequestData($sendData),
             ['Content-Type' => self::CONTENT_TYPE_FORM]
         );
+
+        return $this->formatResponse($res);
     }
 
     /**
@@ -188,6 +192,11 @@ class Sso implements SsoInterface
             $this->getRequestData($sendData),
             ['Content-Type' => self::CONTENT_TYPE_FORM]
         );
+
+        if (formatVersion($this->version)) {
+            $data = $this->formatResponse($data);
+            return $data['items'] ?? [];
+        }
 
         if (! $data) {
             return [];
@@ -212,12 +221,14 @@ class Sso implements SsoInterface
             return [];
         }
 
-        return requestClient(
+        $data = requestClient(
             self::GET,
             $this->userCenterHost . getConfigByFormatName('sso_plugins.%s.usercenter_api.SEARCH_SERVER_USER', $this->version),
             $this->getRequestData($sendData),
             ['Content-Type' => self::CONTENT_TYPE_FORM]
         );
+
+        return $this->formatResponse($data);
     }
 
     /**
@@ -235,7 +246,37 @@ class Sso implements SsoInterface
             ['Content-Type' => self::CONTENT_TYPE_TEXT]
         );
 
+        if (formatVersion($this->version) > 1) {
+            $data = $this->formatResponse($users);
+            $users = $data['data'];
+        }
+
         return $users[$id] ?? [];
+    }
+
+    /**
+     * 格式化输出结果.
+     *
+     * @param $res
+     * @return mixed
+     */
+    private function formatResponse($res)
+    {
+        if (isset($res['code']) && $res['code'] != 0) {
+            throw new PluginException(ErrorCode::REQUEST_ERROR, $res['msg'] ?? '');
+        }
+
+        return $res;
+    }
+
+    private function init($version)
+    {
+        // 验证版本
+        Utils::checkVersion($version);
+        $this->version = $version;
+
+        // 设置host
+        $this->setHost();
     }
 
     /**
