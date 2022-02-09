@@ -193,7 +193,7 @@ class Sso implements SsoInterface
             ['Content-Type' => self::CONTENT_TYPE_FORM]
         );
 
-        if (formatVersion($this->version)) {
+        if (formatVersion($this->version) > 1) {
             $data = $this->formatResponse($data);
             return $data['items'] ?? [];
         }
