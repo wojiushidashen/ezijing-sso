@@ -17,14 +17,14 @@ class RedisKeys extends AbstractConstants
     /**
      * 用户登录缓存key.
      *
-     * @Message("CACHE_USER_INFO_TGC:%s")
+     * @Message("CACHE_USER_INFO_TGC:%s:%s")
      */
     public const CACHE_USER_INFO_TGC = 0;
 
     /**
      * 用户缓存key.
      *
-     * @Message("CACHE_USER_INFO_SSOID:%s")
+     * @Message("CACHE_USER_INFO_SSOID:%s:%s")
      */
     public const CACHE_USER_INFO_SSOID = 1;
 }

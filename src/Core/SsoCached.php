@@ -190,10 +190,10 @@ class SsoCached implements SsoCachedInterface
         $this->cachedTag = (int) ($cachedTag ?? -1);
         switch ($cachedTag) {
             case self::CACHED_TAG_SSOID:
-                $this->cacheKey = RedisKeys::getMessage(RedisKeys::CACHE_USER_INFO_SSOID, [$this->cachedIndex]);
+                $this->cacheKey = RedisKeys::getMessage(RedisKeys::CACHE_USER_INFO_SSOID, [$this->version, $this->cachedIndex]);
                 break;
             case self::CACHED_TAG_TGC:
-                $this->cacheKey = RedisKeys::getMessage(RedisKeys::CACHE_USER_INFO_TGC, [md5($this->cachedIndex)]);
+                $this->cacheKey = RedisKeys::getMessage(RedisKeys::CACHE_USER_INFO_TGC, [$this->version, md5($this->cachedIndex)]);
                 break;
             default:
                 throw new PluginException(ErrorCode::CACHED_SSO_INFO_ERROR, 'cached tag error');
