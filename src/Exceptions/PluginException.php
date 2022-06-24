@@ -11,9 +11,9 @@ class PluginException extends \RuntimeException
 {
     public function __construct($code = 0, $message = '', Throwable $previous = null)
     {
-        if (!$message) {
+        if (! $message) {
             $message = ErrorCode::getMessage($code);
-        }else{
+        } else {
             if (is_array($message)) {
                 $message = ErrorCode::getMessage($code, $message);
             }

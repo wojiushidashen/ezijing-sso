@@ -184,7 +184,7 @@ class Sso implements SsoInterface
     public function exactSearchUser(array $userParams = [])
     {
         $sendData = [];
-        $allowUserParams = ['username', 'email', 'mobile'];
+        $allowUserParams = ['id', 'username', 'nickname', 'email', 'mobile', 'page', 'size', 'need_encrypt'];
         setDataAndCheck($userParams, $allowUserParams, [], $sendData);
         $data = requestClient(
             self::POST,
@@ -235,14 +235,18 @@ class Sso implements SsoInterface
      * 通过用户的ssoId精确检索用户信息.
      *
      * @param string $id 用户的ssoId
+     * @param mixed $needEncrypt
      * @return array|mixed
      */
-    public function exactSearchOneUserById($id)
+    public function exactSearchOneUserById($id, $needEncrypt = 1)
     {
         $users = requestClient(
             self::GET,
             $this->userCenterHost . getConfigByFormatName('sso_plugins.%s.usercenter_api.SEARCH_SERVER_USER_MULTI', $this->version),
-            $this->getRequestData(['id' => $id]),
+            $this->getRequestData([
+                'id' => $id,
+                'need_encrypt' => $needEncrypt,
+            ]),
             ['Content-Type' => self::CONTENT_TYPE_TEXT]
         );
 

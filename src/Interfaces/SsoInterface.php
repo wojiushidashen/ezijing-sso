@@ -59,7 +59,8 @@ interface SsoInterface
      * 通过用户的ssoId精确搜索单个用户信息.
      *
      * @param string $id 用户的ssoId
+     * @param mixed $needEncrypt
      * @return mixed
      */
-    public function exactSearchOneUserById($id);
+    public function exactSearchOneUserById($id, $needEncrypt = 1);
 }
