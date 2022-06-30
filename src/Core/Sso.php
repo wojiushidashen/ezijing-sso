@@ -259,6 +259,40 @@ class Sso implements SsoInterface
     }
 
     /**
+     * 批量获取用户信息.
+     *
+     * @param $params
+     * @param int $needEncrypt
+     * @return mixed|void
+     */
+    public function multiGetUsers($params, $needEncrypt = 1)
+    {
+        $sendData = [];
+        $allowUserParams = ['id', 'username', 'need_cache', 'need_encrypt'];
+        setDataAndCheck($params, $allowUserParams, [], $sendData);
+
+        if (empty($sendData)) {
+            return [];
+        }
+
+        $users = requestClient(
+            self::GET,
+            $this->userCenterHost . getConfigByFormatName('sso_plugins.%s.usercenter_api.SEARCH_USER', $this->version),
+            $this->getRequestData(array_merge([
+                'need_encrypt' => $needEncrypt,
+            ], $sendData)),
+            ['Content-Type' => self::CONTENT_TYPE_TEXT]
+        );
+
+        if (formatVersion($this->version) > 1) {
+            $data = $this->formatResponse($users);
+            $users = $data['data'];
+        }
+
+        return $users;
+    }
+
+    /**
      * 格式化输出结果.
      *
      * @param $res

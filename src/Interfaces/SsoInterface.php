@@ -63,4 +63,12 @@ interface SsoInterface
      * @return mixed
      */
     public function exactSearchOneUserById($id, $needEncrypt = 1);
+
+    /**
+     * 批量查询用户信息.
+     * @param $params
+     * @param int $needEncrypt
+     * @return mixed
+     */
+    public function multiGetUsers($params, $needEncrypt = 1);
 }
