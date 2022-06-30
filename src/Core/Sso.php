@@ -289,6 +289,7 @@ class Sso implements SsoInterface
             $users = $data['data'];
         }
 
+
         return $users;
     }
 
