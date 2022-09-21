@@ -214,7 +214,7 @@ class Sso implements SsoInterface
     public function search(array $userParams)
     {
         $sendData = [];
-        $allowUserParams = ['id', 'username', 'nickname', 'email', 'mobile', 'page', 'size'];
+        $allowUserParams = ['id', 'username', 'nickname', 'email', 'mobile', 'page', 'size', 'need_encrypt'];
         setDataAndCheck($userParams, $allowUserParams, [], $sendData);
 
         if (empty($sendData)) {
